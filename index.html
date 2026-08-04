@@ -343,7 +343,7 @@
         <div class="mark" aria-hidden="true"></div>
         <div>
           <h1>Aura · Música para Vídeo</h1>
-          <div class="subtitle">Capa dos metadados, letras estilizadas e áudio original intacto. <span style="opacity:.65">v1.1</span></div>
+          <div class="subtitle">Capa dos metadados, letras estilizadas e áudio original intacto. <span style="opacity:.65">v1.2</span></div>
         </div>
       </div>
       <div class="privacy">Processamento local no navegador</div>
@@ -535,6 +535,7 @@
     import { parseBlob } from "https://esm.sh/music-metadata@11.14.0?bundle";
 
     const CDN_TIMEOUT_MS = 30000;
+    const appAsset = (path) => new URL(path, document.baseURI).href;
     const waitWithTimeout = (promise, ms, label) => Promise.race([
       promise,
       new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} excedeu ${Math.round(ms / 1000)} segundos.`)), ms))
@@ -571,21 +572,22 @@
           errors.push(error?.message || String(error));
         }
       }
-      throw new Error(`${label} não pôde ser carregado por nenhum servidor. ${errors.join(' | ')}`);
+      throw new Error(`${label} não pôde ser carregado. ${errors.join(' | ')}`);
+    }
+
+    async function fetchAsBlobURL(url, mimeType, timeout = CDN_TIMEOUT_MS) {
+      const response = await waitWithTimeout(fetch(url, { cache: 'force-cache', mode: 'cors' }), timeout, `Download de ${url}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status} ao baixar ${url}`);
+      const data = await waitWithTimeout(response.arrayBuffer(), timeout, `Leitura de ${url}`);
+      return URL.createObjectURL(new Blob([data], { type: mimeType }));
     }
 
     async function ensureFFmpegLibraries() {
       await loadScriptFromMirrors([
-        `${location.origin}/vendor/ffmpeg.js`,
+        appAsset('./vendor/ffmpeg/ffmpeg.js'),
         'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js',
         'https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js'
       ], 'FFmpegWASM', 'A biblioteca principal do FFmpeg');
-
-      await loadScriptFromMirrors([
-        `${location.origin}/vendor/util.js`,
-        'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/umd/index.js',
-        'https://unpkg.com/@ffmpeg/util@0.12.2/dist/umd/index.js'
-      ], 'FFmpegUtil', 'A biblioteca auxiliar do FFmpeg');
     }
 
     const $ = (id) => document.getElementById(id);
@@ -1077,24 +1079,24 @@
     async function loadFFmpeg() {
       if (state.ffmpegLoaded && state.ffmpeg) return;
 
-      setStatus('Carregando as bibliotecas de vídeo…',5,'Tentando servidores compatíveis com o navegador.');
+      setStatus('Carregando as bibliotecas de vídeo…',5,'Tentando primeiro os arquivos locais do site.');
       await ensureFFmpegLibraries();
 
-      if (!window.FFmpegWASM?.FFmpeg || !window.FFmpegUtil?.toBlobURL) {
-        throw new Error('O navegador carregou os arquivos, mas a API do FFmpeg não ficou disponível. Atualize a página e tente novamente.');
+      if (!window.FFmpegWASM?.FFmpeg) {
+        throw new Error('O navegador carregou o arquivo principal, mas a API FFmpegWASM não ficou disponível. Atualize a página e tente novamente.');
       }
 
       const { FFmpeg } = window.FFmpegWASM;
-      const { toBlobURL } = window.FFmpegUtil;
       const coreMirrors = [
-        `${location.origin}/vendor/core`,
-        'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd',
-        'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd'
+        { base: appAsset('./vendor/core/'), local: true },
+        { base: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/', local: false },
+        { base: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/', local: false }
       ];
       const errors = [];
 
       for (let index = 0; index < coreMirrors.length; index++) {
-        const base = coreMirrors[index];
+        const source = coreMirrors[index];
+        const base = source.base;
         const ffmpeg = new FFmpeg();
         ffmpeg.on('log', ({ message }) => { state.lastLog = message; dom.logText.textContent = message; });
         ffmpeg.on('progress', ({ progress }) => {
@@ -1102,11 +1104,15 @@
         });
 
         try {
-          setStatus('Carregando o motor de vídeo…', 8 + index * 2, `Servidor ${index + 1}/${coreMirrors.length}. Primeiro uso: cerca de 31 MB.`);
-          const [coreURL, wasmURL] = await Promise.all([
-            waitWithTimeout(toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'), CDN_TIMEOUT_MS, 'Download do núcleo JavaScript'),
-            waitWithTimeout(toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'), 90000, 'Download do núcleo WebAssembly')
-          ]);
+          setStatus('Carregando o motor de vídeo…', 8 + index * 2, `${source.local ? "Arquivos locais do site" : `Servidor alternativo ${index}/${coreMirrors.length - 1}`}. Primeiro uso: cerca de 31 MB.`);
+          const rawCoreURL = new URL('ffmpeg-core.js', base).href;
+          const rawWasmURL = new URL('ffmpeg-core.wasm', base).href;
+          const [coreURL, wasmURL] = source.local
+            ? [rawCoreURL, rawWasmURL]
+            : await Promise.all([
+                fetchAsBlobURL(rawCoreURL, 'text/javascript', CDN_TIMEOUT_MS),
+                fetchAsBlobURL(rawWasmURL, 'application/wasm', 90000)
+              ]);
           await waitWithTimeout(ffmpeg.load({ coreURL, wasmURL }), 90000, 'Inicialização do FFmpeg');
           state.ffmpeg = ffmpeg;
           state.ffmpegLoaded = true;
@@ -1192,7 +1198,7 @@
         revoke(state.resultURL); state.resultURL=URL.createObjectURL(blob); dom.resultVideo.src=state.resultURL; dom.downloadLink.href=state.resultURL; dom.downloadLink.download=outputName; dom.resultBox.classList.add('show');
         setStatus('Vídeo concluído com o áudio original intacto.',100,`${outputName} · ${(blob.size/1024/1024).toFixed(1)} MB`);
       } catch (error) {
-        console.error(error); setStatus('Não foi possível concluir a exportação.',0,error?.message||String(error)); alert(`Falha na exportação:\n\n${error?.message||error}\n\nA versão 1.1 tenta dois servidores automaticamente. Se o erro ocorrer durante a codificação, tente 720p e feche outros aplicativos.`);
+        console.error(error); setStatus('Não foi possível concluir a exportação.',0,error?.message||String(error)); alert(`Falha na exportação:\n\n${error?.message||error}\n\nA versão 1.2 tenta primeiro as dependências locais e depois usa servidores alternativos. Se o erro ocorrer durante a codificação, tente 720p e feche outros aplicativos.`);
       } finally {
         if(state.ffmpeg) for(const name of [...new Set(tracked)]) { try { await state.ffmpeg.deleteFile(name); } catch {} }
         state.converting=false; dom.convertButton.disabled=!state.audioFile;
