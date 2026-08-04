@@ -1,0 +1,1155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>Aura — Música para Vídeo</title>
+  <style>
+    :root {
+      --bg: #000;
+      --panel: rgba(10, 15, 18, .82);
+      --panel-2: rgba(17, 27, 29, .72);
+      --line: rgba(155, 255, 220, .16);
+      --text: #ecfff9;
+      --muted: #8fa8a2;
+      --cyan: #62f6ff;
+      --mint: #73ffd0;
+      --lime: #c7ff54;
+      --danger: #ff788d;
+      --radius: 22px;
+      --shadow: 0 22px 70px rgba(0, 0, 0, .55);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #000; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(64, 255, 208, .15), transparent 35%),
+        radial-gradient(circle at 85% 18%, rgba(65, 217, 255, .12), transparent 30%),
+        linear-gradient(180deg, #020504, #000 48%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .22;
+      background-image:
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, black, transparent 86%);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1500px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 60px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 4px 22px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .mark {
+      width: 46px;
+      aspect-ratio: 1;
+      border-radius: 15px;
+      background:
+        radial-gradient(circle at 38% 32%, #e9fff8 0 5%, transparent 6%),
+        conic-gradient(from 215deg, var(--cyan), var(--mint), var(--lime), #45dfff, var(--cyan));
+      box-shadow: 0 0 36px rgba(91, 255, 211, .35), inset 0 0 18px rgba(255,255,255,.4);
+      position: relative;
+    }
+    .mark::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 50% 50% 44% 56%;
+      background: #020706;
+      box-shadow: inset 0 0 16px rgba(97,255,219,.5);
+      transform: rotate(-18deg);
+    }
+
+    h1 { font-size: clamp(20px, 3vw, 34px); margin: 0; letter-spacing: -.04em; }
+    .subtitle { margin-top: 3px; color: var(--muted); font-size: 13px; }
+    .privacy {
+      color: var(--mint);
+      background: rgba(105,255,208,.07);
+      border: 1px solid rgba(105,255,208,.18);
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(330px, 1fr) minmax(400px, 1.1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .column { display: grid; gap: 18px; min-width: 0; }
+    .panel {
+      background: linear-gradient(145deg, rgba(17, 27, 29, .85), rgba(4, 8, 9, .9));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .panel-title { font-weight: 760; letter-spacing: -.02em; }
+    .step {
+      color: #00110c;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      font-weight: 900;
+      font-size: 12px;
+      box-shadow: 0 0 25px rgba(101,255,211,.22);
+    }
+    .title-row { display: flex; align-items: center; gap: 10px; }
+    .panel-body { padding: 18px; }
+
+    .drop-zone {
+      min-height: 150px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed rgba(112,255,216,.35);
+      border-radius: 19px;
+      background:
+        radial-gradient(circle at center, rgba(102,255,216,.08), transparent 60%),
+        rgba(0,0,0,.22);
+      transition: .2s ease;
+      padding: 22px;
+      position: relative;
+    }
+    .drop-zone.drag { border-color: var(--lime); transform: scale(1.01); background: rgba(115,255,208,.1); }
+    .drop-zone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .upload-icon { font-size: 34px; filter: drop-shadow(0 0 18px rgba(113,255,216,.5)); }
+    .drop-zone strong { display: block; margin: 9px 0 4px; }
+    .drop-zone small { color: var(--muted); line-height: 1.45; }
+
+    .track-card {
+      display: none;
+      grid-template-columns: 70px 1fr auto;
+      gap: 13px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 10px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 17px;
+    }
+    .track-card.show { display: grid; }
+    .track-cover { width: 70px; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: #07100e; }
+    .track-title { font-weight: 760; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .track-artist, .track-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .badge { padding: 6px 9px; border-radius: 999px; font-size: 11px; background: rgba(108,255,211,.1); color: var(--mint); border: 1px solid rgba(108,255,211,.15); }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .span-2 { grid-column: 1 / -1; }
+    label { display: grid; gap: 7px; min-width: 0; color: #dceae6; font-size: 12px; }
+    label > span { color: #b8cbc5; }
+    input[type="text"], input[type="number"], select, textarea, input[type="color"] {
+      width: 100%;
+      min-width: 0;
+      color: var(--text);
+      background: rgba(0,0,0,.36);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px;
+      outline: 0;
+      transition: .18s ease;
+    }
+    input[type="text"], input[type="number"], select { height: 43px; padding: 0 11px; }
+    textarea { min-height: 165px; resize: vertical; padding: 12px; line-height: 1.5; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(102,255,214,.52); box-shadow: 0 0 0 3px rgba(102,255,214,.07); }
+    input[type="color"] { height: 43px; padding: 5px; }
+    input[type="range"] { width: 100%; accent-color: var(--mint); }
+    select option { background: #07100e; }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    .switch-copy strong { display: block; font-size: 13px; }
+    .switch-copy small { display: block; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+    .switch { position: relative; width: 48px; height: 27px; flex: 0 0 auto; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; border-radius: 99px; background: #26322f; border: 1px solid rgba(255,255,255,.1); transition: .2s; }
+    .slider::before { content:""; position:absolute; width:21px; height:21px; left:2px; top:2px; border-radius:50%; background:#d6e2df; transition:.2s; }
+    .switch input:checked + .slider { background: linear-gradient(90deg, var(--cyan), var(--mint)); }
+    .switch input:checked + .slider::before { transform: translateX(21px); background:#00120d; }
+
+    .button-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 13px; }
+    .btn {
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.055);
+      color: var(--text);
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 13px;
+      font-weight: 700;
+      transition: .18s ease;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(110,255,216,.3); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--cyan), var(--mint) 56%, var(--lime));
+      color: #00110d;
+      border: 0;
+      box-shadow: 0 13px 30px rgba(80,255,205,.18);
+    }
+    .btn.danger { color: #ffd9df; border-color: rgba(255,120,141,.25); }
+
+    .preview-wrap { padding: 14px; }
+    .stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 540px;
+      border-radius: 18px;
+      background: #020303;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 70vh;
+      width: auto;
+      height: auto;
+      box-shadow: 0 25px 80px rgba(0,0,0,.66);
+      touch-action: none;
+      cursor: grab;
+    }
+    canvas.dragging { cursor: grabbing; }
+    .stage-tip {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.58);
+      color: rgba(255,255,255,.72);
+      font-size: 11px;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+    audio { width: 100%; height: 42px; margin-top: 12px; filter: invert(.92) hue-rotate(110deg); }
+
+    .advanced { display: grid; gap: 13px; margin-top: 14px; }
+    details { border: 1px solid rgba(255,255,255,.075); border-radius: 15px; background: rgba(0,0,0,.2); overflow: hidden; }
+    summary { padding: 13px 14px; cursor: pointer; font-weight: 700; font-size: 13px; }
+    details .inside { padding: 2px 14px 14px; }
+
+    .range-line { display: grid; grid-template-columns: 1fr 54px; gap: 9px; align-items: center; }
+    .range-value { color: var(--mint); text-align: right; font-variant-numeric: tabular-nums; }
+    .hint { color: var(--muted); font-size: 11px; line-height: 1.5; margin-top: 8px; }
+
+    .status-box {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.32);
+      border: 1px solid rgba(255,255,255,.07);
+      min-height: 74px;
+    }
+    .status-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; }
+    .status-text { color: #cfe4dd; }
+    .status-percent { color: var(--mint); font-variant-numeric: tabular-nums; }
+    .progress { height: 7px; border-radius: 99px; background: rgba(255,255,255,.07); overflow: hidden; margin-top: 10px; }
+    .progress > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--mint), var(--lime)); transition: width .2s linear; }
+    .log { margin-top: 8px; color: #728a83; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .result { display: none; margin-top: 13px; padding: 13px; border-radius: 15px; border: 1px solid rgba(105,255,208,.18); background: rgba(105,255,208,.055); }
+    .result.show { display: block; }
+    .result video { width: 100%; max-height: 380px; border-radius: 12px; background: #000; }
+    .result-actions { display: flex; gap: 9px; margin-top: 10px; flex-wrap: wrap; }
+
+    .notice {
+      padding: 12px 13px;
+      border-radius: 14px;
+      color: #cfe1dc;
+      background: rgba(82,189,255,.06);
+      border: 1px solid rgba(82,189,255,.14);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .notice strong { color: var(--cyan); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .stage { min-height: 430px; }
+      canvas { max-height: 66vh; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 16px, 1500px); padding-top: 9px; }
+      header { align-items: flex-start; }
+      .privacy { display: none; }
+      .grid, .grid.three { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      .panel-body { padding: 14px; }
+      .panel-head { padding: 14px; }
+      .stage { min-height: 390px; }
+      .track-card { grid-template-columns: 58px 1fr; }
+      .track-cover { width: 58px; }
+      .track-card .badge { grid-column: 1 / -1; width: max-content; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>Aura · Música para Vídeo</h1>
+          <div class="subtitle">Capa dos metadados, letras estilizadas e áudio original intacto.</div>
+        </div>
+      </div>
+      <div class="privacy">Processamento local no navegador</div>
+    </header>
+
+    <section class="layout">
+      <div class="column">
+        <article class="panel">
+          <div class="panel-head">
+            <div class="title-row"><span class="step">1</span><span class="panel-title">Música e metadados</span></div>
+          </div>
+          <div class="panel-body">
+            <div class="drop-zone" id="dropZone">
+              <input id="audioFile" type="file" accept="audio/*,.mp3,.flac,.m4a,.aac,.wav,.ogg,.opus,.wma,.ape,.alac" />
+              <div>
+                <div class="upload-icon">◈</div>
+                <strong>Toque ou arraste uma música</strong>
+                <small>A capa, título, artista e letras incorporadas serão procurados automaticamente.</small>
+              </div>
+            </div>
+
+            <div class="track-card" id="trackCard">
+              <img class="track-cover" id="trackCover" alt="Capa" />
+              <div style="min-width:0">
+                <div class="track-title" id="trackTitle">—</div>
+                <div class="track-artist" id="trackArtist">—</div>
+                <div class="track-meta" id="trackMeta">—</div>
+              </div>
+              <span class="badge" id="lyricsBadge">Sem letras</span>
+            </div>
+
+            <div class="button-row">
+              <button class="btn" id="coverButton" disabled>Trocar capa</button>
+              <button class="btn" id="lrcButton" disabled>Importar LRC</button>
+              <button class="btn danger" id="clearButton" disabled>Limpar</button>
+              <input class="hidden" id="coverFile" type="file" accept="image/*" />
+              <input class="hidden" id="lrcFile" type="file" accept=".lrc,.txt,text/plain" />
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div class="title-row"><span class="step">2</span><span class="panel-title">Letra e legenda</span></div>
+          </div>
+          <div class="panel-body">
+            <div class="switch-row">
+              <div class="switch-copy">
+                <strong>Ativar letras no vídeo</strong>
+                <small>Usa SYLT/LRC sincronizado ou distribui as linhas não sincronizadas.</small>
+              </div>
+              <label class="switch" aria-label="Ativar letras"><input id="lyricsEnabled" type="checkbox" disabled><span class="slider"></span></label>
+            </div>
+
+            <label style="margin-top:13px">
+              <span>Letra detectada ou editada</span>
+              <textarea id="lyricsText" placeholder="As letras incorporadas aparecerão aqui. Você também pode colar uma letra ou um LRC com tempos como [00:12.50]." disabled></textarea>
+            </label>
+
+            <div class="button-row">
+              <button class="btn" id="applyLyrics" disabled>Aplicar edição</button>
+              <button class="btn" id="restoreLyrics" disabled>Restaurar metadados</button>
+            </div>
+            <div class="hint" id="lyricsHint">Carregue uma música para procurar letras incorporadas.</div>
+
+            <details style="margin-top:14px" open>
+              <summary>Fonte e legibilidade</summary>
+              <div class="inside">
+                <div class="grid">
+                  <label class="span-2"><span>Família tipográfica</span>
+                    <select id="fontFamily">
+                      <option value='Inter, system-ui, sans-serif'>Moderna · Inter / Sistema</option>
+                      <option value='"Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Heiti SC", sans-serif'>Chinês · Noto Sans SC / YaHei</option>
+                      <option value='"Noto Serif SC", "Songti SC", SimSun, serif'>Chinês clássico · Noto Serif SC / Songti</option>
+                      <option value='"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif'>Chinês tradicional · Noto Sans TC</option>
+                      <option value='"Noto Sans JP", "Yu Gothic", Meiryo, sans-serif'>Japonês · Noto Sans JP</option>
+                      <option value='"Noto Sans KR", "Malgun Gothic", sans-serif'>Coreano · Noto Sans KR</option>
+                      <option value='"Noto Naskh Arabic", Tahoma, serif'>Árabe · Noto Naskh</option>
+                      <option value='Georgia, "Times New Roman", serif'>Serifada · Georgia</option>
+                      <option value='ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'>Monoespaçada</option>
+                      <option value='AuraCustomFont, sans-serif'>Fonte personalizada</option>
+                    </select>
+                  </label>
+                  <label><span>Tamanho</span><div class="range-line"><input id="fontSize" type="range" min="2.2" max="9" step=".1" value="4.6"><span class="range-value" data-for="fontSize">4.6%</span></div></label>
+                  <label><span>Peso</span><select id="fontWeight"><option>400</option><option>500</option><option selected>700</option><option>800</option><option>900</option></select></label>
+                  <label><span>Cor da letra</span><input id="textColor" type="color" value="#ffffff"></label>
+                  <label><span>Alinhamento</span><select id="textAlign"><option value="left">Esquerda</option><option value="center" selected>Centro</option><option value="right">Direita</option></select></label>
+                  <label><span>Espessura da borda</span><div class="range-line"><input id="strokeWidth" type="range" min="0" max="12" step=".5" value="4"><span class="range-value" data-for="strokeWidth">4</span></div></label>
+                  <label><span>Cor da borda</span><input id="strokeColor" type="color" value="#000000"></label>
+                  <label><span>Sombra</span><div class="range-line"><input id="shadowBlur" type="range" min="0" max="40" step="1" value="16"><span class="range-value" data-for="shadowBlur">16</span></div></label>
+                  <label><span>Fundo de contraste</span><div class="range-line"><input id="boxOpacity" type="range" min="0" max=".9" step=".05" value=".35"><span class="range-value" data-for="boxOpacity">35%</span></div></label>
+                  <label><span>Largura máxima</span><div class="range-line"><input id="textWidth" type="range" min="45" max="94" step="1" value="84"><span class="range-value" data-for="textWidth">84%</span></div></label>
+                  <label><span>Linhas exibidas</span><select id="lineMode"><option value="current" selected>Somente a atual</option><option value="triple">Anterior + atual + próxima</option></select></label>
+                </div>
+                <div class="button-row">
+                  <button class="btn" id="fontButton">Carregar TTF/OTF</button>
+                  <input class="hidden" id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,font/*" />
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>Posição da letra</summary>
+              <div class="inside">
+                <div class="grid">
+                  <label><span>Horizontal</span><div class="range-line"><input id="posX" type="range" min="0" max="100" step="1" value="50"><span class="range-value" data-for="posX">50%</span></div></label>
+                  <label><span>Vertical</span><div class="range-line"><input id="posY" type="range" min="0" max="100" step="1" value="82"><span class="range-value" data-for="posY">82%</span></div></label>
+                  <label><span>Espaçamento entre linhas</span><div class="range-line"><input id="lineHeight" type="range" min=".9" max="1.8" step=".05" value="1.18"><span class="range-value" data-for="lineHeight">1.18</span></div></label>
+                  <label><span>Arredondamento do fundo</span><div class="range-line"><input id="boxRadius" type="range" min="0" max="40" step="1" value="18"><span class="range-value" data-for="boxRadius">18</span></div></label>
+                </div>
+                <div class="hint">Você também pode arrastar a letra diretamente na prévia.</div>
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div class="title-row"><span class="step">3</span><span class="panel-title">Vídeo e exportação</span></div>
+          </div>
+          <div class="panel-body">
+            <div class="grid">
+              <label><span>Formato da tela</span>
+                <select id="resolution">
+                  <option value="720x1280" selected>Vertical 9:16 · 720 × 1280</option>
+                  <option value="1080x1920">Vertical 9:16 · 1080 × 1920</option>
+                  <option value="720x720">Quadrado 1:1 · 720 × 720</option>
+                  <option value="1080x1080">Quadrado 1:1 · 1080 × 1080</option>
+                  <option value="1280x720">Horizontal 16:9 · 1280 × 720</option>
+                  <option value="1920x1080">Horizontal 16:9 · 1920 × 1080</option>
+                </select>
+              </label>
+              <label><span>Contêiner</span>
+                <select id="containerFormat">
+                  <option value="mkv" selected>MKV · máxima compatibilidade de áudio</option>
+                  <option value="mp4">MP4 · somente se o áudio original aceitar</option>
+                </select>
+              </label>
+              <label><span>Qualidade visual</span><select id="videoQuality"><option value="22">Leve</option><option value="18" selected>Alta</option><option value="15">Muito alta</option></select></label>
+              <label><span>Velocidade</span><select id="preset"><option value="ultrafast">Mais rápida</option><option value="veryfast" selected>Equilibrada</option><option value="fast">Mais compacta</option></select></label>
+              <label><span>Estilo do fundo</span><select id="backgroundStyle"><option value="blur" selected>Capa ampliada e desfocada</option><option value="gradient">Gradiente escuro da capa</option><option value="black">Preto absoluto</option></select></label>
+              <label><span>Tamanho da capa</span><div class="range-line"><input id="coverSize" type="range" min="35" max="84" step="1" value="62"><span class="range-value" data-for="coverSize">62%</span></div></label>
+              <label><span>Escurecer fundo</span><div class="range-line"><input id="backgroundDim" type="range" min="0" max=".9" step=".05" value=".48"><span class="range-value" data-for="backgroundDim">48%</span></div></label>
+              <label><span>Cantos da capa</span><div class="range-line"><input id="coverRadius" type="range" min="0" max="18" step="1" value="5"><span class="range-value" data-for="coverRadius">5%</span></div></label>
+            </div>
+
+            <div class="notice" style="margin-top:14px">
+              <strong>Áudio sem perda:</strong> a exportação usa <code>-c:a copy</code>. O fluxo comprimido ou lossless original é apenas remuxado para o vídeo; não há normalização, alteração de bitrate nem nova compressão.
+            </div>
+
+            <button class="btn primary" id="convertButton" disabled style="width:100%; margin-top:14px; min-height:52px">Gerar vídeo mantendo o áudio original</button>
+
+            <div class="status-box">
+              <div class="status-line"><span class="status-text" id="statusText">Aguardando uma música.</span><span class="status-percent" id="statusPercent">0%</span></div>
+              <div class="progress"><div id="progressBar"></div></div>
+              <div class="log" id="logText">O motor FFmpeg será carregado apenas ao converter.</div>
+            </div>
+
+            <div class="result" id="resultBox">
+              <video id="resultVideo" controls playsinline></video>
+              <div class="result-actions">
+                <a class="btn primary" id="downloadLink" download style="display:inline-grid;place-items:center;text-decoration:none">Baixar vídeo</a>
+                <button class="btn" id="newExport">Gerar novamente</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="column">
+        <article class="panel" style="position:sticky;top:12px">
+          <div class="panel-head">
+            <div class="title-row"><span class="step">◉</span><span class="panel-title">Prévia</span></div>
+            <span class="badge" id="previewBadge">9:16</span>
+          </div>
+          <div class="preview-wrap">
+            <div class="stage" id="stage">
+              <canvas id="previewCanvas" width="540" height="960"></canvas>
+              <div class="stage-tip">Arraste a letra para reposicionar</div>
+            </div>
+            <audio id="audioPreview" controls preload="metadata"></audio>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/umd/index.js"></script>
+
+  <script type="module">
+    import { parseBlob } from "https://esm.sh/music-metadata@11.14.0?bundle";
+
+    const $ = (id) => document.getElementById(id);
+    const dom = Object.fromEntries([
+      'dropZone','audioFile','trackCard','trackCover','trackTitle','trackArtist','trackMeta','lyricsBadge',
+      'coverButton','lrcButton','clearButton','coverFile','lrcFile','lyricsEnabled','lyricsText','applyLyrics','restoreLyrics','lyricsHint',
+      'fontFamily','fontSize','fontWeight','textColor','textAlign','strokeWidth','strokeColor','shadowBlur','boxOpacity','textWidth','lineMode',
+      'fontButton','fontFile','posX','posY','lineHeight','boxRadius','resolution','containerFormat','videoQuality','preset','backgroundStyle',
+      'coverSize','backgroundDim','coverRadius','convertButton','statusText','statusPercent','progressBar','logText','resultBox','resultVideo',
+      'downloadLink','newExport','previewBadge','previewCanvas','audioPreview','stage'
+    ].map(id => [id, $(id)]));
+
+    const state = {
+      audioFile: null,
+      audioURL: '',
+      metadata: null,
+      coverBlob: null,
+      coverURL: '',
+      coverImage: null,
+      title: '',
+      artist: '',
+      duration: 0,
+      originalLyricsText: '',
+      originalCues: [],
+      cues: [],
+      lyricsKind: 'none',
+      resultURL: '',
+      ffmpeg: null,
+      ffmpegLoaded: false,
+      converting: false,
+      drag: null,
+      lyricHitbox: null,
+      customFont: null,
+      lastLog: ''
+    };
+
+    const canvas = dom.previewCanvas;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const offscreen = document.createElement('canvas');
+    const offctx = offscreen.getContext('2d');
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function fmtTime(sec) {
+      if (!Number.isFinite(sec)) return '00:00';
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = Math.floor(sec % 60);
+      return h ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+    }
+    function safeName(value) {
+      return (value || 'audio-video').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,90) || 'audio-video';
+    }
+    function setStatus(text, percent = null, log = null) {
+      dom.statusText.textContent = text;
+      if (percent !== null) {
+        const p = clamp(Number(percent) || 0, 0, 100);
+        dom.statusPercent.textContent = `${Math.round(p)}%`;
+        dom.progressBar.style.width = `${p}%`;
+      }
+      if (log !== null) dom.logText.textContent = log;
+    }
+    function revoke(url) { if (url) URL.revokeObjectURL(url); }
+
+    function updateRangeLabels() {
+      document.querySelectorAll('[data-for]').forEach(el => {
+        const input = $(el.dataset.for);
+        const v = Number(input.value);
+        const percentIds = new Set(['fontSize','boxOpacity','textWidth','posX','posY','coverSize','backgroundDim','coverRadius']);
+        if (['boxOpacity','backgroundDim'].includes(input.id)) el.textContent = `${Math.round(v * 100)}%`;
+        else if (percentIds.has(input.id)) el.textContent = `${v}%`;
+        else el.textContent = input.value;
+      });
+    }
+
+    function settings() {
+      const [w,h] = dom.resolution.value.split('x').map(Number);
+      return {
+        w, h,
+        fontFamily: dom.fontFamily.value,
+        fontSizeRatio: Number(dom.fontSize.value) / 100,
+        fontWeight: dom.fontWeight.value,
+        textColor: dom.textColor.value,
+        textAlign: dom.textAlign.value,
+        strokeWidthRatio: Number(dom.strokeWidth.value) / 1000,
+        strokeColor: dom.strokeColor.value,
+        shadowBlurRatio: Number(dom.shadowBlur.value) / 1000,
+        boxOpacity: Number(dom.boxOpacity.value),
+        textWidth: Number(dom.textWidth.value) / 100,
+        lineMode: dom.lineMode.value,
+        posX: Number(dom.posX.value) / 100,
+        posY: Number(dom.posY.value) / 100,
+        lineHeight: Number(dom.lineHeight.value),
+        boxRadiusRatio: Number(dom.boxRadius.value) / 1000,
+        backgroundStyle: dom.backgroundStyle.value,
+        coverSize: Number(dom.coverSize.value) / 100,
+        backgroundDim: Number(dom.backgroundDim.value),
+        coverRadius: Number(dom.coverRadius.value) / 100,
+        crf: dom.videoQuality.value,
+        preset: dom.preset.value,
+        container: dom.containerFormat.value
+      };
+    }
+
+    async function imageFromBlob(blob) {
+      const url = URL.createObjectURL(blob);
+      try {
+        const img = new Image();
+        img.decoding = 'async';
+        await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = url; });
+        return img;
+      } finally { URL.revokeObjectURL(url); }
+    }
+
+    function createFallbackCover() {
+      const c = document.createElement('canvas'); c.width = c.height = 1200;
+      const x = c.getContext('2d');
+      const g = x.createRadialGradient(420,330,30,600,600,790);
+      g.addColorStop(0,'#a8ffe4'); g.addColorStop(.18,'#31dfd0'); g.addColorStop(.52,'#0c5360'); g.addColorStop(1,'#010403');
+      x.fillStyle = g; x.fillRect(0,0,c.width,c.height);
+      x.globalAlpha = .35;
+      for (let i=0;i<24;i++) {
+        x.beginPath(); x.arc(600,600,90+i*24,0,Math.PI*2); x.strokeStyle = i%2 ? '#8bffdc' : '#57dfff'; x.lineWidth=3; x.stroke();
+      }
+      x.globalAlpha = 1;
+      x.fillStyle='#00110d'; x.beginPath(); x.arc(600,600,245,0,Math.PI*2); x.fill();
+      x.strokeStyle='#bfff55'; x.lineWidth=32; x.beginPath(); x.arc(600,600,150,.35,5.3); x.stroke();
+      x.fillStyle='#eafff7'; x.beginPath(); x.arc(600,600,36,0,Math.PI*2); x.fill();
+      return new Promise(resolve => c.toBlob(resolve,'image/png'));
+    }
+
+    function getNativeTags(metadata) {
+      const list = [];
+      for (const [type, tags] of Object.entries(metadata?.native || {})) {
+        for (const tag of tags || []) list.push({ type, id: String(tag.id || ''), value: tag.value });
+      }
+      return list;
+    }
+
+    function stringFromTagValue(value) {
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value.map(stringFromTagValue).filter(Boolean).join('\n');
+      if (value && typeof value === 'object') {
+        if (typeof value.text === 'string') return value.text;
+        if (typeof value.value === 'string') return value.value;
+        if (typeof value.lyrics === 'string') return value.lyrics;
+      }
+      return '';
+    }
+
+    function extractLyrics(metadata, duration) {
+      const synced = [];
+      const unsynced = [];
+      const tags = getNativeTags(metadata);
+
+      for (const tag of tags) {
+        const id = tag.id.toUpperCase();
+        const value = tag.value;
+        if (id === 'SYLT' && value?.syncText?.length) {
+          const isMilliseconds = value.timeStampFormat === 2 || value.timeStampFormat === 'milliseconds';
+          for (const item of value.syncText) {
+            let time = Number(item.timestamp ?? item.time ?? 0);
+            if (isMilliseconds || time > duration * 5) time /= 1000;
+            if (Number.isFinite(time) && String(item.text || '').trim()) synced.push({ start: Math.max(0,time), text: String(item.text).trim() });
+          }
+        } else if (/SYNCED.?LYRICS|SYNCLYRICS|LRC/.test(id)) {
+          const text = stringFromTagValue(value);
+          if (text) {
+            const parsed = parseLRC(text);
+            if (parsed.length) synced.push(...parsed);
+            else unsynced.push(text);
+          }
+        } else if (/USLT|UNSYNCED.?LYRICS|^LYRICS$|©LYR|WM\/LYRICS|LYRIC/.test(id)) {
+          const text = stringFromTagValue(value);
+          if (text) {
+            const parsed = parseLRC(text);
+            if (parsed.length) synced.push(...parsed);
+            else unsynced.push(text);
+          }
+        }
+      }
+
+      for (const item of metadata?.common?.lyrics || []) {
+        if (item?.syncText?.length) {
+          for (const row of item.syncText) {
+            let time = Number(row.timestamp ?? row.time ?? 0);
+            if (time > duration * 5) time /= 1000;
+            if (Number.isFinite(time) && String(row.text || '').trim()) synced.push({ start: Math.max(0,time), text: String(row.text).trim() });
+          }
+        }
+        const text = stringFromTagValue(item);
+        if (text) {
+          const parsed = parseLRC(text);
+          if (parsed.length) synced.push(...parsed);
+          else unsynced.push(text);
+        }
+      }
+
+      const dedupSynced = [...new Map(synced.map(x => [`${x.start.toFixed(3)}|${x.text}`, x])).values()].sort((a,b)=>a.start-b.start);
+      if (dedupSynced.length) return { kind:'sincronizada', text: toLRC(dedupSynced), cues: finalizeCues(dedupSynced, duration) };
+
+      const clean = unsynced.find(t => t && t.trim()) || '';
+      if (clean) return { kind:'não sincronizada', text: clean.trim(), cues: distributeUnsynced(clean, duration) };
+      return { kind:'none', text:'', cues:[] };
+    }
+
+    function parseLRC(text) {
+      const out = [];
+      const offsetMatch = text.match(/\[offset:([+-]?\d+)\]/i);
+      const offset = offsetMatch ? Number(offsetMatch[1]) / 1000 : 0;
+      for (const raw of text.replace(/^\uFEFF/,'').split(/\r?\n/)) {
+        const stamps = [...raw.matchAll(/\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g)];
+        if (!stamps.length) continue;
+        const lyric = raw.replace(/\[[^\]]+\]/g,'').trim();
+        if (!lyric) continue;
+        for (const m of stamps) {
+          const fraction = m[3] ? Number(`0.${m[3].padEnd(3,'0').slice(0,3)}`) : 0;
+          out.push({ start: Math.max(0, Number(m[1])*60 + Number(m[2]) + fraction + offset), text: lyric });
+        }
+      }
+      return out.sort((a,b)=>a.start-b.start);
+    }
+
+    function toLRC(cues) {
+      return cues.map(c => {
+        const m = Math.floor(c.start / 60); const s = c.start % 60;
+        return `[${String(m).padStart(2,'0')}:${s.toFixed(2).padStart(5,'0')}]${c.text}`;
+      }).join('\n');
+    }
+
+    function finalizeCues(cues, duration) {
+      const sorted = cues.filter(c => c.text && Number.isFinite(c.start)).sort((a,b)=>a.start-b.start);
+      return sorted.map((c,i) => ({
+        start: clamp(c.start,0,Math.max(duration,0)),
+        end: clamp(sorted[i+1]?.start ?? duration, c.start + .08, Math.max(duration,c.start+.08)),
+        text: c.text
+      }));
+    }
+
+    function distributeUnsynced(text, duration) {
+      const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s && !/^\[(ar|ti|al|by|offset):/i.test(s));
+      if (!lines.length || !duration) return [];
+      const startPad = Math.min(5, duration * .04);
+      const endPad = Math.min(4, duration * .03);
+      const usable = Math.max(1, duration - startPad - endPad);
+      return lines.map((line,i) => ({
+        start: startPad + usable * i / lines.length,
+        end: startPad + usable * (i+1) / lines.length,
+        text: line
+      }));
+    }
+
+    function cuesFromEditor(text) {
+      const lrc = parseLRC(text);
+      if (lrc.length) return { kind:'sincronizada', cues:finalizeCues(lrc,state.duration) };
+      return { kind:'não sincronizada', cues:distributeUnsynced(text,state.duration) };
+    }
+
+    function findCueIndex(time) {
+      if (!state.cues.length) return -1;
+      let lo=0, hi=state.cues.length-1, ans=-1;
+      while (lo<=hi) {
+        const mid=(lo+hi)>>1;
+        if (state.cues[mid].start <= time) { ans=mid; lo=mid+1; } else hi=mid-1;
+      }
+      return ans >= 0 && time < state.cues[ans].end + .04 ? ans : -1;
+    }
+
+    function roundedRect(pathCtx,x,y,w,h,r) {
+      r=Math.min(r,w/2,h/2); pathCtx.beginPath(); pathCtx.roundRect ? pathCtx.roundRect(x,y,w,h,r) : (
+        pathCtx.moveTo(x+r,y), pathCtx.arcTo(x+w,y,x+w,y+h,r), pathCtx.arcTo(x+w,y+h,x,y+h,r), pathCtx.arcTo(x,y+h,x,y,r), pathCtx.arcTo(x,y,x+w,y,r)
+      );
+    }
+
+    function drawImageCover(c,img,x,y,w,h) {
+      const scale=Math.max(w/img.width,h/img.height); const sw=w/scale, sh=h/scale;
+      const sx=(img.width-sw)/2, sy=(img.height-sh)/2;
+      c.drawImage(img,sx,sy,sw,sh,x,y,w,h);
+    }
+    function drawImageContain(c,img,x,y,w,h) {
+      const scale=Math.min(w/img.width,h/img.height); const dw=img.width*scale, dh=img.height*scale;
+      c.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
+    }
+
+    function drawBase(c,w,h,s) {
+      c.save(); c.clearRect(0,0,w,h); c.fillStyle='#000'; c.fillRect(0,0,w,h);
+      if (state.coverImage && s.backgroundStyle !== 'black') {
+        if (s.backgroundStyle === 'blur') {
+          c.save(); c.filter=`blur(${Math.max(w,h)*.045}px) saturate(1.18)`; c.globalAlpha=.78;
+          drawImageCover(c,state.coverImage,-w*.08,-h*.08,w*1.16,h*1.16); c.restore();
+        } else {
+          drawImageCover(c,state.coverImage,0,0,w,h);
+          const grad=c.createLinearGradient(0,0,w,h); grad.addColorStop(0,'rgba(0,0,0,.3)'); grad.addColorStop(.55,'rgba(0,20,17,.78)'); grad.addColorStop(1,'rgba(0,0,0,.94)'); c.fillStyle=grad; c.fillRect(0,0,w,h);
+        }
+      }
+      c.fillStyle=`rgba(0,0,0,${s.backgroundStyle==='black' ? 0 : s.backgroundDim})`; c.fillRect(0,0,w,h);
+      const glow=c.createRadialGradient(w*.5,h*.38,0,w*.5,h*.38,Math.max(w,h)*.62);
+      glow.addColorStop(0,'rgba(88,255,211,.12)'); glow.addColorStop(.4,'rgba(55,219,255,.045)'); glow.addColorStop(1,'rgba(0,0,0,0)'); c.fillStyle=glow; c.fillRect(0,0,w,h);
+
+      if (state.coverImage) {
+        const maxW=w*s.coverSize; const maxH=Math.min(h*.58,maxW);
+        const size=Math.min(maxW,maxH); const x=(w-size)/2; const y=Math.max(h*.08,(h*.42-size/2));
+        c.save(); c.shadowColor='rgba(0,0,0,.72)'; c.shadowBlur=Math.max(w,h)*.035; c.shadowOffsetY=Math.max(w,h)*.014;
+        const radius=size*s.coverRadius; roundedRect(c,x,y,size,size,radius); c.clip(); drawImageContain(c,state.coverImage,x,y,size,size); c.restore();
+        c.save(); c.strokeStyle='rgba(213,255,242,.16)'; c.lineWidth=Math.max(1,w*.002); roundedRect(c,x,y,size,size,radius); c.stroke(); c.restore();
+      }
+
+      c.save(); c.textAlign='center'; c.textBaseline='alphabetic';
+      const titleY=h*.69; c.fillStyle='rgba(240,255,250,.96)'; c.font=`800 ${Math.max(17,w*.036)}px Inter, system-ui, sans-serif`;
+      c.fillText((state.title || 'Sua música').slice(0,70),w/2,titleY,w*.82);
+      c.fillStyle='rgba(185,218,207,.8)'; c.font=`500 ${Math.max(12,w*.021)}px Inter, system-ui, sans-serif`;
+      c.fillText((state.artist || 'Artista').slice(0,80),w/2,titleY+Math.max(22,h*.027),w*.76);
+      c.restore();
+      c.restore();
+    }
+
+    function segmentText(text) {
+      if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+        const segmenter = new Intl.Segmenter(undefined,{granularity:'word'});
+        return [...segmenter.segment(text)].map(x=>x.segment);
+      }
+      return /\s/.test(text) ? text.split(/(\s+)/) : Array.from(text);
+    }
+
+    function wrapLines(c,text,maxWidth,maxLines=4) {
+      const explicit=String(text).split(/\n/); const lines=[];
+      for (const paragraph of explicit) {
+        const tokens=segmentText(paragraph); let line='';
+        for (const token of tokens) {
+          const test=line+token;
+          if (line && c.measureText(test).width>maxWidth) { lines.push(line.trim()); line=token.trimStart(); }
+          else line=test;
+        }
+        if (line.trim() || !paragraph) lines.push(line.trim());
+      }
+      if (lines.length<=maxLines) return lines;
+      const sliced=lines.slice(0,maxLines); let last=sliced[maxLines-1];
+      while (last && c.measureText(last+'…').width>maxWidth) last=Array.from(last).slice(0,-1).join('');
+      sliced[maxLines-1]=(last||'')+'…'; return sliced;
+    }
+
+    function textRowsForCue(index,s) {
+      if (index<0) return [];
+      if (s.lineMode==='triple') {
+        return [
+          {text:state.cues[index-1]?.text||'', alpha:.45, scale:.72},
+          {text:state.cues[index]?.text||'', alpha:1, scale:1},
+          {text:state.cues[index+1]?.text||'', alpha:.45, scale:.72}
+        ].filter(r=>r.text);
+      }
+      return [{text:state.cues[index]?.text||'', alpha:1, scale:1}];
+    }
+
+    function renderLyricsBlock(targetCtx, targetW, targetH, cueIndex, s, originX, originY, blockW, blockH) {
+      targetCtx.save(); targetCtx.clearRect(0,0,targetW,targetH);
+      const rows=textRowsForCue(cueIndex,s);
+      if (!rows.length) { targetCtx.restore(); return null; }
+      const baseFont=Math.max(16,Math.round(s.fontSizeRatio*targetW));
+      const maxTextW=blockW*.92;
+      const rendered=[]; let totalH=0;
+      for (const row of rows) {
+        const size=Math.max(12,baseFont*row.scale);
+        targetCtx.font=`${s.fontWeight} ${size}px ${s.fontFamily}`;
+        const lines=wrapLines(targetCtx,row.text,maxTextW,s.lineMode==='triple'?2:4);
+        const lh=size*s.lineHeight; const height=lines.length*lh;
+        rendered.push({...row,size,lines,lh,height}); totalH+=height;
+      }
+      totalH += Math.max(0,rendered.length-1)*baseFont*.34;
+      const padX=baseFont*.48, padY=baseFont*.32;
+      const boxW=blockW; const boxH=Math.min(blockH,totalH+padY*2);
+      const boxX=originX; const boxY=originY+(blockH-boxH)/2;
+      if (s.boxOpacity>0) {
+        targetCtx.fillStyle=`rgba(0,0,0,${s.boxOpacity})`;
+        roundedRect(targetCtx,boxX,boxY,boxW,boxH,Math.max(2,s.boxRadiusRatio*targetW)); targetCtx.fill();
+      }
+      let y=boxY+padY;
+      for (const row of rendered) {
+        targetCtx.font=`${s.fontWeight} ${row.size}px ${s.fontFamily}`;
+        targetCtx.textBaseline='top'; targetCtx.textAlign=s.textAlign;
+        targetCtx.lineJoin='round'; targetCtx.miterLimit=2;
+        const x=s.textAlign==='left'?boxX+padX:s.textAlign==='right'?boxX+boxW-padX:boxX+boxW/2;
+        for (const line of row.lines) {
+          targetCtx.globalAlpha=row.alpha;
+          targetCtx.shadowColor='rgba(0,0,0,.92)'; targetCtx.shadowBlur=Math.max(0,s.shadowBlurRatio*targetW);
+          const stroke=Math.max(0,s.strokeWidthRatio*targetW);
+          if (stroke>0) { targetCtx.lineWidth=stroke*2; targetCtx.strokeStyle=s.strokeColor; targetCtx.strokeText(line,x,y,maxTextW); }
+          targetCtx.fillStyle=s.textColor; targetCtx.fillText(line,x,y,maxTextW); y+=row.lh;
+        }
+        y+=baseFont*.34;
+      }
+      targetCtx.globalAlpha=1; targetCtx.restore();
+      return {x:boxX,y:boxY,w:boxW,h:boxH};
+    }
+
+    function previewDimensions() {
+      const s=settings(); const max=960;
+      const scale=Math.min(max/s.h,720/s.w,1);
+      return {w:Math.max(270,Math.round(s.w*scale)),h:Math.max(270,Math.round(s.h*scale))};
+    }
+
+    function currentPreviewCue() {
+      if (!dom.lyricsEnabled.checked || !state.cues.length) return -1;
+      const t=Number.isFinite(dom.audioPreview.currentTime)?dom.audioPreview.currentTime:0;
+      const found=findCueIndex(t);
+      return found>=0?found:0;
+    }
+
+    function drawPreview() {
+      const d=previewDimensions();
+      if (canvas.width!==d.w || canvas.height!==d.h) { canvas.width=d.w; canvas.height=d.h; }
+      const s=settings(); drawBase(ctx,d.w,d.h,s);
+      if (dom.lyricsEnabled.checked && state.cues.length) {
+        const blockW=d.w*s.textWidth; const blockH=Math.min(d.h*.28,d.w*.55);
+        const x=(d.w-blockW)*s.posX; const y=(d.h-blockH)*s.posY;
+        offscreen.width=d.w; offscreen.height=d.h;
+        const hit=renderLyricsBlock(offctx,d.w,d.h,currentPreviewCue(),s,x,y,blockW,blockH);
+        ctx.drawImage(offscreen,0,0); state.lyricHitbox=hit;
+      } else state.lyricHitbox=null;
+      requestAnimationFrame(drawPreview);
+    }
+
+    function updatePreviewBadge() {
+      const [w,h]=dom.resolution.value.split('x').map(Number);
+      const g=(a,b)=>b?g(b,a%b):a, d=g(w,h); dom.previewBadge.textContent=`${w/d}:${h/d}`;
+    }
+
+    async function setCover(blob) {
+      state.coverBlob=blob; revoke(state.coverURL); state.coverURL=URL.createObjectURL(blob); dom.trackCover.src=state.coverURL;
+      state.coverImage=await imageFromBlob(blob);
+    }
+
+    async function loadAudio(file) {
+      if (!file) return;
+      reset(false); state.audioFile=file; dom.trackCard.classList.add('show');
+      dom.trackTitle.textContent='Lendo metadados…'; dom.trackArtist.textContent=file.name; setStatus('Analisando a música…',2,'Leitura local dos metadados.');
+      revoke(state.audioURL); state.audioURL=URL.createObjectURL(file); dom.audioPreview.src=state.audioURL;
+      try {
+        const metadata=await parseBlob(file,{duration:true,skipCovers:false}); state.metadata=metadata;
+        state.duration=Number(metadata.format?.duration)||await getAudioDuration(state.audioURL);
+        state.title=metadata.common?.title || file.name.replace(/\.[^.]+$/,'');
+        state.artist=metadata.common?.artist || metadata.common?.albumartist || 'Artista desconhecido';
+        const pic=metadata.common?.picture?.[0];
+        if (pic?.data) await setCover(new Blob([pic.data],{type:pic.format||'image/jpeg'})); else await setCover(await createFallbackCover());
+        const lyr=extractLyrics(metadata,state.duration);
+        state.originalLyricsText=lyr.text; state.originalCues=lyr.cues.map(x=>({...x})); state.cues=lyr.cues; state.lyricsKind=lyr.kind;
+        dom.lyricsText.value=lyr.text; dom.lyricsEnabled.checked=lyr.cues.length>0;
+        updateTrackUI(metadata,lyr); enableUI(true); setStatus('Música pronta para personalizar.',5,`${metadata.format?.container||'Áudio'} · ${metadata.format?.codec||'codec detectado'}`);
+      } catch (error) {
+        console.error(error); state.duration=await getAudioDuration(state.audioURL); state.title=file.name.replace(/\.[^.]+$/,''); state.artist='Artista desconhecido';
+        await setCover(await createFallbackCover()); state.metadata={}; state.cues=[]; state.originalCues=[]; state.originalLyricsText=''; state.lyricsKind='none';
+        updateTrackUI({}, {kind:'none',cues:[]}); enableUI(true); setStatus('A música foi aberta, mas alguns metadados não puderam ser lidos.',5,error.message);
+      }
+    }
+
+    function getAudioDuration(url) {
+      return new Promise(resolve => {
+        const a=new Audio(); a.preload='metadata'; a.onloadedmetadata=()=>resolve(a.duration||0); a.onerror=()=>resolve(0); a.src=url;
+      });
+    }
+
+    function updateTrackUI(metadata,lyr) {
+      dom.trackTitle.textContent=state.title; dom.trackArtist.textContent=state.artist;
+      const bitrate=metadata.format?.bitrate?`${Math.round(metadata.format.bitrate/1000)} kb/s`:'bitrate original';
+      dom.trackMeta.textContent=`${fmtTime(state.duration)} · ${metadata.format?.codec||'áudio'} · ${bitrate}`;
+      dom.lyricsBadge.textContent=lyr.cues?.length?`Letra ${lyr.kind}`:'Sem letra incorporada';
+      dom.lyricsBadge.style.color=lyr.cues?.length?'var(--lime)':'var(--muted)';
+      dom.lyricsHint.textContent=lyr.cues?.length?`${lyr.cues.length} trecho(s) preparados. ${lyr.kind==='não sincronizada'?'As linhas foram distribuídas ao longo da duração e podem ser editadas.':'Os tempos incorporados serão preservados.'}`:'Nenhuma letra foi encontrada. Cole uma letra ou importe um arquivo LRC.';
+    }
+
+    function enableUI(enabled) {
+      [dom.coverButton,dom.lrcButton,dom.clearButton,dom.lyricsEnabled,dom.lyricsText,dom.applyLyrics,dom.restoreLyrics,dom.convertButton].forEach(x=>x.disabled=!enabled);
+    }
+
+    function reset(full=true) {
+      if (state.converting) return;
+      revoke(state.audioURL); revoke(state.coverURL); revoke(state.resultURL);
+      Object.assign(state,{audioFile:null,audioURL:'',metadata:null,coverBlob:null,coverURL:'',coverImage:null,title:'',artist:'',duration:0,originalLyricsText:'',originalCues:[],cues:[],lyricsKind:'none',resultURL:'',lyricHitbox:null});
+      dom.audioPreview.removeAttribute('src'); dom.audioPreview.load(); dom.trackCard.classList.remove('show'); dom.lyricsText.value=''; dom.lyricsEnabled.checked=false; dom.resultBox.classList.remove('show'); dom.resultVideo.removeAttribute('src');
+      enableUI(false); setStatus('Aguardando uma música.',0,'O motor FFmpeg será carregado apenas ao converter.');
+      if (full) dom.audioFile.value='';
+    }
+
+    function applyEditorLyrics() {
+      const text=dom.lyricsText.value.trim();
+      if (!text) { state.cues=[]; state.lyricsKind='none'; dom.lyricsEnabled.checked=false; dom.lyricsBadge.textContent='Sem letras'; dom.lyricsHint.textContent='A letra foi removida da exportação.'; return; }
+      const parsed=cuesFromEditor(text); state.cues=parsed.cues; state.lyricsKind=parsed.kind; dom.lyricsEnabled.checked=state.cues.length>0;
+      dom.lyricsBadge.textContent=`Letra ${parsed.kind}`; dom.lyricsHint.textContent=`${state.cues.length} trecho(s) aplicados à prévia e à exportação.`;
+    }
+
+    async function loadFFmpeg() {
+      if (state.ffmpegLoaded) return;
+      if (!window.FFmpegWASM || !window.FFmpegUtil) throw new Error('As bibliotecas do FFmpeg não foram carregadas. Verifique sua conexão com a internet.');
+      const { FFmpeg }=window.FFmpegWASM; const { toBlobURL }=window.FFmpegUtil;
+      const ffmpeg=new FFmpeg(); state.ffmpeg=ffmpeg;
+      ffmpeg.on('log',({message})=>{ state.lastLog=message; dom.logText.textContent=message; });
+      ffmpeg.on('progress',({progress})=>{ if(state.converting) setStatus('Codificando o vídeo…',25+Math.max(0,progress)*72,state.lastLog); });
+      setStatus('Carregando o motor de vídeo…',8,'Primeiro uso: download aproximado de 31 MB.');
+      const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
+      await ffmpeg.load({coreURL:await toBlobURL(`${base}/ffmpeg-core.js`,'text/javascript'),wasmURL:await toBlobURL(`${base}/ffmpeg-core.wasm`,'application/wasm')});
+      state.ffmpegLoaded=true;
+    }
+
+    function canvasToBlob(c,type='image/png',quality) { return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('Falha ao criar imagem.')),type,quality)); }
+
+    async function buildBasePng(s) {
+      const c=document.createElement('canvas'); c.width=s.w; c.height=s.h; const x=c.getContext('2d',{alpha:false}); drawBase(x,s.w,s.h,s); return canvasToBlob(c);
+    }
+
+    async function buildLyricAssets(ffmpeg,s,trackedFiles) {
+      const blockW=Math.max(64,Math.round(s.w*s.textWidth)); const blockH=Math.max(80,Math.round(Math.min(s.h*.28,s.w*.55)));
+      const x=Math.round((s.w-blockW)*s.posX); const y=Math.round((s.h-blockH)*s.posY);
+      const c=document.createElement('canvas'); c.width=blockW; c.height=blockH; const xctx=c.getContext('2d');
+      const rows=[]; const blankName='lyric_blank.png'; xctx.clearRect(0,0,blockW,blockH); await ffmpeg.writeFile(blankName,new Uint8Array(await (await canvasToBlob(c)).arrayBuffer())); trackedFiles.push(blankName);
+      let cursor=0; let fileIndex=0;
+      const pushSegment=(name,duration)=>{ if(duration>.025) rows.push({name,duration}); };
+      const cues=state.cues.slice(0,1000);
+      for(let i=0;i<cues.length;i++) {
+        const cue=cues[i]; if(cue.start>cursor) pushSegment(blankName,cue.start-cursor);
+        xctx.clearRect(0,0,blockW,blockH);
+        const localS={...s,posX:0,posY:0,textWidth:1};
+        renderLyricsBlock(xctx,blockW,blockH,i,localS,0,0,blockW,blockH);
+        const name=`lyric_${String(fileIndex++).padStart(4,'0')}.png`;
+        const blob=await canvasToBlob(c); await ffmpeg.writeFile(name,new Uint8Array(await blob.arrayBuffer())); trackedFiles.push(name);
+        const end=Math.min(state.duration,Math.max(cue.start+.08,cue.end)); pushSegment(name,end-cue.start); cursor=end;
+        setStatus(`Preparando letras ${i+1}/${cues.length}…`,10+15*(i+1)/cues.length,`${cues.length} quadros de legenda, sem alterar o áudio.`);
+      }
+      if(cursor<state.duration) pushSegment(blankName,state.duration-cursor);
+      if(!rows.length) rows.push({name:blankName,duration:Math.max(.1,state.duration)});
+      let concat='ffconcat version 1.0\n';
+      for(const row of rows) concat+=`file '${row.name}'\nduration ${row.duration.toFixed(6)}\n`;
+      concat+=`file '${rows[rows.length-1].name}'\n`;
+      await ffmpeg.writeFile('lyrics.ffconcat',new TextEncoder().encode(concat)); trackedFiles.push('lyrics.ffconcat');
+      return {x,y};
+    }
+
+    async function generateVideo() {
+      if (!state.audioFile || state.converting) return;
+      applyEditorLyrics(); state.converting=true; dom.convertButton.disabled=true; dom.resultBox.classList.remove('show');
+      const tracked=[];
+      try {
+        await loadFFmpeg(); const ffmpeg=state.ffmpeg; const s=settings();
+        if(!state.duration) throw new Error('Não foi possível determinar a duração da música.');
+        setStatus('Montando a composição…',9,'Gerando a imagem-base em alta resolução.');
+        const baseBlob=await buildBasePng(s); await ffmpeg.writeFile('base.png',new Uint8Array(await baseBlob.arrayBuffer())); tracked.push('base.png');
+        const ext=(state.audioFile.name.match(/\.([a-z0-9]{1,8})$/i)?.[1]||'audio').toLowerCase(); const inputName=`input.${ext}`;
+        await ffmpeg.writeFile(inputName,new Uint8Array(await state.audioFile.arrayBuffer())); tracked.push(inputName);
+
+        const useLyrics=dom.lyricsEnabled.checked && state.cues.length>0; let lyricPos=null;
+        if(useLyrics) lyricPos=await buildLyricAssets(ffmpeg,s,tracked);
+        const outputBase=safeName(`${state.artist}-${state.title}`); let requested=s.container; let outputName=`${outputBase}.${requested}`;
+        const args=['-hide_banner','-y','-loop','1','-framerate','30','-i','base.png','-i',inputName];
+        if(useLyrics) args.push('-f','concat','-safe','0','-i','lyrics.ffconcat');
+        if(useLyrics) args.push('-filter_complex',`[0:v]format=rgba[bg];[2:v]format=rgba[sub];[bg][sub]overlay=x=${lyricPos.x}:y=${lyricPos.y}:format=auto[v]`,'-map','[v]');
+        else args.push('-map','0:v:0');
+        args.push('-map','1:a:0','-c:v','libx264','-preset',s.preset,'-crf',s.crf,'-pix_fmt','yuv420p','-r','30','-c:a','copy','-map_metadata','1','-metadata',`title=${state.title}`,'-metadata',`artist=${state.artist}`,'-shortest');
+        if(requested==='mp4') args.push('-movflags','+faststart');
+        args.push(outputName); tracked.push(outputName);
+        setStatus('Codificando o vídeo…',25,'O áudio está sendo copiado bit a bit, sem recodificação.');
+        try { await ffmpeg.exec(args); }
+        catch (error) {
+          if(requested!=='mp4') throw error;
+          setStatus('O codec original não cabe em MP4. Mudando para MKV…',28,'Fallback sem recodificar o áudio.');
+          try { await ffmpeg.deleteFile(outputName); } catch {}
+          tracked.splice(tracked.indexOf(outputName),1); requested='mkv'; outputName=`${outputBase}.mkv`; tracked.push(outputName);
+          const retry=args.slice(0,-1).filter((v,i,a)=>v!=='-movflags' && a[i-1]!=='-movflags'); retry.push(outputName); await ffmpeg.exec(retry);
+        }
+        setStatus('Finalizando o arquivo…',98,'Lendo o vídeo concluído do sistema virtual.');
+        const data=await ffmpeg.readFile(outputName); const mime=requested==='mp4'?'video/mp4':'video/x-matroska'; const blob=new Blob([data],{type:mime});
+        revoke(state.resultURL); state.resultURL=URL.createObjectURL(blob); dom.resultVideo.src=state.resultURL; dom.downloadLink.href=state.resultURL; dom.downloadLink.download=outputName; dom.resultBox.classList.add('show');
+        setStatus('Vídeo concluído com o áudio original intacto.',100,`${outputName} · ${(blob.size/1024/1024).toFixed(1)} MB`);
+      } catch (error) {
+        console.error(error); setStatus('Não foi possível concluir a exportação.',0,error?.message||String(error)); alert(`Falha na exportação:\n\n${error?.message||error}\n\nEm celulares com pouca memória, tente 720p ou feche outros aplicativos.`);
+      } finally {
+        if(state.ffmpeg) for(const name of [...new Set(tracked)]) { try { await state.ffmpeg.deleteFile(name); } catch {} }
+        state.converting=false; dom.convertButton.disabled=!state.audioFile;
+      }
+    }
+
+    // Eventos de arquivo
+    dom.audioFile.addEventListener('change',e=>loadAudio(e.target.files[0]));
+    ['dragenter','dragover'].forEach(type=>dom.dropZone.addEventListener(type,e=>{e.preventDefault();dom.dropZone.classList.add('drag');}));
+    ['dragleave','drop'].forEach(type=>dom.dropZone.addEventListener(type,e=>{e.preventDefault();dom.dropZone.classList.remove('drag');}));
+    dom.dropZone.addEventListener('drop',e=>{const file=[...e.dataTransfer.files].find(f=>f.type.startsWith('audio/')||/\.(mp3|flac|m4a|aac|wav|ogg|opus|wma|ape|alac)$/i.test(f.name));if(file)loadAudio(file);});
+    dom.coverButton.addEventListener('click',()=>dom.coverFile.click());
+    dom.coverFile.addEventListener('change',async e=>{if(e.target.files[0])await setCover(e.target.files[0]);});
+    dom.lrcButton.addEventListener('click',()=>dom.lrcFile.click());
+    dom.lrcFile.addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;dom.lyricsText.value=await f.text();applyEditorLyrics();});
+    dom.clearButton.addEventListener('click',()=>reset());
+    dom.applyLyrics.addEventListener('click',applyEditorLyrics);
+    dom.restoreLyrics.addEventListener('click',()=>{dom.lyricsText.value=state.originalLyricsText;state.cues=state.originalCues.map(x=>({...x}));state.lyricsKind=state.cues.length?(parseLRC(state.originalLyricsText).length?'sincronizada':'não sincronizada'):'none';dom.lyricsEnabled.checked=state.cues.length>0;updateTrackUI(state.metadata||{}, {kind:state.lyricsKind,cues:state.cues});});
+    dom.fontButton.addEventListener('click',()=>dom.fontFile.click());
+    dom.fontFile.addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(state.customFont)document.fonts.delete(state.customFont);const font=new FontFace('AuraCustomFont',await f.arrayBuffer());await font.load();document.fonts.add(font);state.customFont=font;dom.fontFamily.value='AuraCustomFont, sans-serif';}catch(err){alert(`Não foi possível carregar a fonte: ${err.message}`);}});
+    dom.convertButton.addEventListener('click',generateVideo);
+    dom.newExport.addEventListener('click',()=>{dom.resultBox.classList.remove('show');dom.convertButton.scrollIntoView({behavior:'smooth',block:'center'});});
+
+    // Controles e prévia
+    document.querySelectorAll('input[type="range"], select, input[type="color"]').forEach(el=>el.addEventListener('input',()=>{updateRangeLabels();if(el===dom.resolution)updatePreviewBadge();}));
+    dom.resolution.addEventListener('change',updatePreviewBadge);
+    dom.lyricsText.addEventListener('change',applyEditorLyrics);
+
+    function canvasPoint(event) {
+      const r=canvas.getBoundingClientRect(); return {x:(event.clientX-r.left)*canvas.width/r.width,y:(event.clientY-r.top)*canvas.height/r.height};
+    }
+    canvas.addEventListener('pointerdown',e=>{
+      if(!state.lyricHitbox||!dom.lyricsEnabled.checked)return; const p=canvasPoint(e),b=state.lyricHitbox;
+      if(p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h){state.drag={start:p,x:Number(dom.posX.value),y:Number(dom.posY.value)};canvas.setPointerCapture(e.pointerId);canvas.classList.add('dragging');}
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if(!state.drag)return; const p=canvasPoint(e); const s=settings(); const blockW=canvas.width*s.textWidth, blockH=Math.min(canvas.height*.28,canvas.width*.55);
+      const dx=(p.x-state.drag.start.x)/Math.max(1,canvas.width-blockW)*100; const dy=(p.y-state.drag.start.y)/Math.max(1,canvas.height-blockH)*100;
+      dom.posX.value=clamp(state.drag.x+dx,0,100); dom.posY.value=clamp(state.drag.y+dy,0,100); updateRangeLabels();
+    });
+    const endDrag=e=>{if(state.drag){state.drag=null;canvas.classList.remove('dragging');try{canvas.releasePointerCapture(e.pointerId);}catch{}}};
+    canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
+
+    updateRangeLabels(); updatePreviewBadge(); enableUI(false); drawPreview();
+  </script>
+</body>
+</html>
