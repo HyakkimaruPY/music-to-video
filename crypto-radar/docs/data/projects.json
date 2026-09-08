@@ -1,0 +1,104 @@
+[
+  {
+    "id": "walrus-2",
+    "symbol": "WAL",
+    "name": "Walrus",
+    "organization": "Mysten Labs / Walrus Foundation",
+    "launch": "2025-03-26",
+    "purpose": "Rede descentralizada de armazenamento e disponibilidade de dados com armazenamento programável.",
+    "category": ["storage", "data-availability", "sui"],
+    "purpose_score": 88,
+    "query_terms": ["Walrus protocol", "WAL token", "Walrus storage", "Mysten Labs Walrus"],
+    "sources": [
+      "https://blog.walrus.xyz/public-mainnet-launch/",
+      "https://www.mystenlabs.com/blog/announcing-walrus-a-decentralized-storage-and-data-availability-protocol"
+    ]
+  },
+  {
+    "id": "initia",
+    "symbol": "INIT",
+    "name": "Initia",
+    "organization": "Initia Labs / Initia ecosystem",
+    "launch": "2025-04",
+    "purpose": "Infraestrutura interligada para rollups/aplicações, combinando uma L1 de coordenação com redes app-specific.",
+    "category": ["layer-1", "rollups", "interoperability"],
+    "purpose_score": 82,
+    "query_terms": ["Initia blockchain", "INIT token", "Initia mainnet"],
+    "sources": ["https://forum.initia.xyz/t/mib-1-add-init-price-feed-to-connect/81"]
+  },
+  {
+    "id": "plume",
+    "symbol": "PLUME",
+    "name": "Plume",
+    "organization": "Plume Network",
+    "launch": "2025-01-21",
+    "purpose": "Blockchain e ecossistema focados em trazer ativos do mundo real (RWA) para uso composável em DeFi.",
+    "category": ["rwa", "defi", "layer-1"],
+    "purpose_score": 90,
+    "query_terms": ["Plume Network", "PLUME token", "Plume RWA", "RWAfi Plume"],
+    "sources": ["https://www.plume.org/blog/tokenomics", "https://www.plume.org/blog/genesis"]
+  },
+  {
+    "id": "sahara-ai",
+    "symbol": "SAHARA",
+    "name": "Sahara AI",
+    "organization": "Sahara AI",
+    "launch": "2025-06-24",
+    "purpose": "Economia descentralizada para dados, desenvolvimento de IA, computação e distribuição de valor entre participantes.",
+    "category": ["ai", "data", "compute"],
+    "purpose_score": 86,
+    "query_terms": ["Sahara AI", "SAHARA token", "Sahara AI data", "Sahara AI marketplace"],
+    "sources": ["https://saharaai.com/blog/sahara-token"]
+  },
+  {
+    "id": "huma-finance",
+    "symbol": "HUMA",
+    "name": "Huma Finance",
+    "organization": "Huma Finance / Huma Foundation",
+    "launch": "2025-05",
+    "purpose": "PayFi: financiamento de pagamentos reais com liquidação on-chain e acesso a ativos de pagamentos do mundo real.",
+    "category": ["payfi", "rwa", "defi", "payments"],
+    "purpose_score": 91,
+    "query_terms": ["Huma Finance", "HUMA token", "PayFi Huma", "Huma payments"],
+    "sources": [
+      "https://blog.huma.finance/introducing-huma-powering-the-future-of-payfi",
+      "https://docs.huma.finance/about-huma/what-is-huma"
+    ]
+  },
+  {
+    "id": "wormhole",
+    "symbol": "W",
+    "name": "Wormhole",
+    "organization": "Wormhole Foundation",
+    "launch": "2024-04-02",
+    "purpose": "Infraestrutura de interoperabilidade para transportar dados, ativos e governança entre diferentes blockchains.",
+    "category": ["interoperability", "bridge", "infrastructure"],
+    "purpose_score": 84,
+    "query_terms": ["Wormhole protocol", "W token", "Wormhole interoperability", "Wormhole bridge"],
+    "sources": ["https://wormhole.com/blog/w-launch-roadmap", "https://wormhole.com/blog/what-is-wormhole"]
+  },
+  {
+    "id": "pyth-network",
+    "symbol": "PYTH",
+    "name": "Pyth Network",
+    "organization": "Pyth Network / Pyth Data Association",
+    "launch": "2023-11-16",
+    "purpose": "Oracle de dados financeiros de alta frequência, levando preços de mercados tradicionais e cripto diretamente para blockchains.",
+    "category": ["oracle", "data", "defi"],
+    "purpose_score": 92,
+    "query_terms": ["Pyth Network", "PYTH token", "Pyth oracle", "Pyth price feeds"],
+    "sources": ["https://www.pyth.network/blog/permissionless-mainnet-token-led-governance-are-live", "https://docs.pyth.network/whitepaper"]
+  },
+  {
+    "id": "zksync",
+    "symbol": "ZK",
+    "name": "ZKsync",
+    "organization": "Matter Labs / ZKsync ecosystem",
+    "launch": "2024-06",
+    "purpose": "Escalar Ethereum com provas de conhecimento zero, interoperabilidade e infraestrutura de redes ZK.",
+    "category": ["layer-2", "zero-knowledge", "ethereum"],
+    "purpose_score": 89,
+    "query_terms": ["ZKsync", "ZK token", "Matter Labs", "ZKsync Era"],
+    "sources": ["https://www.zksync.io/", "https://www.zksync.io/media/alex-gluchowski-on-bringing-banks-onchain"]
+  }
+]
