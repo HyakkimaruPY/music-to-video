@@ -1,0 +1,15 @@
+{
+  "generated_at": null,
+  "status": "initializing",
+  "source_status": {},
+  "methodology": {
+    "price_filter_brl": 2.0,
+    "horizons_h": [1, 3, 6, 12, 24],
+    "causality_note": "Eventos são associados temporalmente a reações; o sistema não afirma causalidade."
+  },
+  "market": [],
+  "scanner": [],
+  "events": [],
+  "alerts": [],
+  "model": {"sample_count": 0, "topic_keys": 0}
+}
