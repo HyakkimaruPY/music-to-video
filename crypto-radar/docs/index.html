@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Crypto Event Radar</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">RADAR PROBABILÍSTICO</div>
+      <h1>Crypto Event Radar</h1>
+      <p>Preço + comportamento em 15 dias + fundamentos + notícias + memória de reação.</p>
+    </div>
+    <div class="statusbox">
+      <span id="statusDot" class="dot"></span>
+      <strong id="statusText">carregando…</strong>
+      <small id="updatedAt">—</small>
+    </div>
+  </header>
+
+  <main>
+    <section class="warning">
+      <strong>Probabilidade, não certeza.</strong> O modelo mede associações históricas entre eventos e movimentos; ele não prova causalidade e não elimina perdas.
+    </section>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="panel">
+      <div class="panelhead">
+        <div><div class="eyebrow">WATCHLIST</div><h2>Projetos abaixo de R$ 2</h2></div>
+        <div class="filters"><button class="active" data-sort="project_score">Fundamento</button><button data-sort="entry_score">Entrada</button><button data-sort="news_bias_6h_pct">Notícias</button></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Projeto</th><th>Preço</th><th>15 dias</th><th>Faixa estável</th><th>↑ típico</th><th>↓ típico</th><th>Fundamento</th><th>Entrada</th><th>Viés 6h</th></tr></thead>
+          <tbody id="coins"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead"><div><div class="eyebrow">DESCOBERTA</div><h2>Scanner bruto abaixo de R$ 2</h2></div><small style="color:var(--muted)">liquidez + tamanho + movimento; ainda sem validação de propósito/equipe</small></div>
+      <div class="tablewrap"><table><thead><tr><th>Ativo</th><th>Preço</th><th>Market cap</th><th>Volume 24h</th><th>24h</th><th>Score de descoberta</th></tr></thead><tbody id="scanner"></tbody></table></div>
+    </section>
+
+    <section class="grid2">
+      <section class="panel">
+        <div class="panelhead"><div><div class="eyebrow">EVENTOS</div><h2>Notícias e reações</h2></div><select id="coinFilter"><option value="all">Todas</option></select></div>
+        <div id="events" class="feed"></div>
+      </section>
+      <section class="panel">
+        <div class="panelhead"><div><div class="eyebrow">ALERTAS</div><h2>Possível reação ainda não precificada</h2></div></div>
+        <div id="alerts" class="feed"></div>
+      </section>
+    </section>
+
+    <section class="panel simulator">
+      <div class="panelhead"><div><div class="eyebrow">SIMULADOR</div><h2>O que esse valor pode virar?</h2></div></div>
+      <div class="simgrid">
+        <label>Cripto<select id="simCoin"></select></label>
+        <label>Valor inicial (R$)<input id="simValue" type="number" min="0" step="10" value="100" /></label>
+        <label>Horizonte<select id="simHorizon"><option value="6">6 horas</option><option value="24">24 horas</option></select></label>
+        <button id="simulate">Simular</button>
+      </div>
+      <div id="simResult" class="simresult"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead"><div><div class="eyebrow">COMO O MODELO PENSA</div><h2>Variáveis aprendidas</h2></div></div>
+      <div class="methodgrid">
+        <article><b>Tempo de reação</b><span>minutos até um movimento relevante após a notícia.</span></article>
+        <article><b>Duração</b><span>tempo até o impulso perder ~60% da força ou inverter.</span></article>
+        <article><b>Retornos</b><span>1h, 3h, 6h, 12h e 24h após cada evento.</span></article>
+        <article><b>Abnormal return</b><span>movimento da moeda descontando o movimento do Bitcoin.</span></article>
+        <article><b>Volume anormal</b><span>volume no evento comparado à mediana das 24h anteriores.</span></article>
+        <article><b>Tópicos</b><span>regulação, juros, hacks, listagens, produto, tokenomics, RWA, IA, oracles e interoperabilidade.</span></article>
+      </div>
+    </section>
+  </main>
+
+  <footer>Crypto Event Radar • estudo quantitativo e experimental • sem execução automática de ordens</footer>
+  <script src="app.js"></script>
+</body>
+</html>
