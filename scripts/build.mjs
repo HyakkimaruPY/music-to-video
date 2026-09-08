@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { build } from 'esbuild';
 
@@ -42,4 +42,7 @@ await build({
   legalComments: 'eof'
 });
 
-console.log('Site pronto em _site/ com todas as dependências locais.');
+// Publica o Crypto Event Radar como subaplicação sem alterar a aplicação principal.
+await cp(fromRoot('crypto-radar', 'docs'), join(output, 'crypto-radar'), { recursive: true });
+
+console.log('Site pronto em _site/ com Aura + /crypto-radar/.');
