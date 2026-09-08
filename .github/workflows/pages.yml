@@ -1,9 +1,11 @@
-name: Publicar Aura no GitHub Pages
+name: Publicar Aura + Crypto Radar no GitHub Pages
 
 on:
   push:
     branches: ["main", "master"]
   workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
 
 permissions:
   contents: read
@@ -21,6 +23,32 @@ jobs:
       - name: Baixar o repositório
         uses: actions/checkout@v6
 
+      - name: Preparar Python do Crypto Radar
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Restaurar memória do modelo
+        uses: actions/cache@v4
+        with:
+          path: crypto-radar/.runtime/model_state.json
+          key: crypto-radar-model-${{ github.run_id }}
+          restore-keys: |
+            crypto-radar-model-
+
+      - name: Inicializar memória do modelo
+        shell: bash
+        run: |
+          mkdir -p crypto-radar/.runtime
+          if [ ! -f crypto-radar/.runtime/model_state.json ]; then
+            cp crypto-radar/docs/data/model_state.json crypto-radar/.runtime/model_state.json
+          fi
+
+      - name: Atualizar mercado, notícias e modelo
+        env:
+          MODEL_STATE_FILE: crypto-radar/.runtime/model_state.json
+        run: python crypto-radar/scripts/update.py
+
       - name: Preparar Node.js
         uses: actions/setup-node@v6
         with:
@@ -29,7 +57,7 @@ jobs:
       - name: Baixar dependências
         run: npm install --no-audit --no-fund
 
-      - name: Montar site com FFmpeg local
+      - name: Montar site com FFmpeg local e Crypto Radar
         run: npm run build
 
       - name: Configurar GitHub Pages
