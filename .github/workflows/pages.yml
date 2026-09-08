@@ -24,11 +24,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Preparar Python do Crypto Radar
+        if: github.event_name != 'push'
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
       - name: Restaurar memória do modelo
+        if: github.event_name != 'push'
         uses: actions/cache@v4
         with:
           path: crypto-radar/.runtime/model_state.json
@@ -37,6 +39,7 @@ jobs:
             crypto-radar-model-
 
       - name: Inicializar memória do modelo
+        if: github.event_name != 'push'
         shell: bash
         run: |
           mkdir -p crypto-radar/.runtime
@@ -45,6 +48,8 @@ jobs:
           fi
 
       - name: Atualizar mercado, notícias e modelo
+        if: github.event_name != 'push'
+        timeout-minutes: 4
         env:
           MODEL_STATE_FILE: crypto-radar/.runtime/model_state.json
         run: python crypto-radar/scripts/update.py
