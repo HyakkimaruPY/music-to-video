@@ -1,0 +1,33 @@
+name: Clip relay smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'api/clip-relay.js'
+      - 'vercel.json'
+      - '.github/workflows/clip-relay-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Vercel relay
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint="https://music-to-video-eosin.vercel.app/api/clip-relay"
+          for attempt in $(seq 1 18); do
+            code="$(curl -sS -o /tmp/body -w '%{http_code}' --max-time 12 "$endpoint" || true)"
+            body="$(cat /tmp/body 2>/dev/null || true)"
+            echo "attempt=$attempt status=$code body=$body"
+            if [ "$code" = "200" ] && printf '%s' "$body" | grep -q '"service":"clip-engine-relay-v1"'; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
