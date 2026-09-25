@@ -45,4 +45,7 @@ await build({
 // Publica o Crypto Event Radar como subaplicação sem alterar a aplicação principal.
 await cp(fromRoot('crypto-radar', 'docs'), join(output, 'crypto-radar'), { recursive: true });
 
-console.log('Site pronto em _site/ com Aura + /crypto-radar/.');
+// Publica o Clip Engine como subaplicação isolada.
+await cp(fromRoot('clip-engine'), join(output, 'clip-engine'), { recursive: true });
+
+console.log('Site pronto em _site/ com Aura + /crypto-radar/ + /clip-engine/.');
